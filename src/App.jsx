@@ -7,30 +7,21 @@ const REPO_LIMIT = 12;
 const initialProfile = {
   name: "Tim Li",
   bio: "I make practical software and keep an active archive of things I am curious enough to build.",
-  location: "INTERNET",
   html_url: `https://github.com/${GITHUB_USERNAME}`,
-  blog: "",
 };
 
-function ProjectCard({ repo, index }) {
-  const language = repo.language || "Unclassified";
-  const description = repo.description;
-
+function ProjectPiece({ repo, index, isSelected, onSelect }) {
   return (
-    <article className="project-card">
-      <div>
-        <div className="card-top">
-          <span className="repo-number">{String(index + 1).padStart(2, "0")}</span>
-          <a className="repo-link" href={repo.html_url} target="_blank" rel="noreferrer" aria-label={`Open ${repo.name} on GitHub`}>↗</a>
-        </div>
-        <h3 className="repo-name">{repo.name}</h3>
-        {description && <p className="repo-description">{description}</p>}
-      </div>
-      <div className="card-footer">
-        <span><i className="language-dot" />{language}</span>
-        <span>★ {repo.stargazers_count}</span>
-      </div>
-    </article>
+    <button
+      className={`project-piece ${isSelected ? "is-selected" : ""}`}
+      type="button"
+      onClick={() => onSelect(repo.id)}
+      aria-pressed={isSelected}
+    >
+      <span className="piece-number">{String(index + 1).padStart(2, "0")}</span>
+      <span className="piece-name">{repo.name}</span>
+      <span className="piece-language">{repo.language || "Code"}</span>
+    </button>
   );
 }
 
@@ -38,6 +29,7 @@ function App() {
   const [profile, setProfile] = useState(initialProfile);
   const [repositories, setRepositories] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedRepositoryId, setSelectedRepositoryId] = useState(null);
   const [status, setStatus] = useState("loading");
   const year = new Date().getFullYear();
   const githubUrl = profile.html_url || `https://github.com/${GITHUB_USERNAME}`;
@@ -54,13 +46,14 @@ function App() {
         if (!profileResponse.ok || !repositoriesResponse.ok) throw new Error("GitHub API request failed");
 
         const [nextProfile, nextRepositories] = await Promise.all([profileResponse.json(), repositoriesResponse.json()]);
+        const nextProjectList = nextRepositories
+          .filter((repository) => !repository.archived)
+          .sort((a, b) => b.stargazers_count - a.stargazers_count || new Date(b.updated_at) - new Date(a.updated_at))
+          .slice(0, REPO_LIMIT);
+
         setProfile((current) => ({ ...current, ...nextProfile }));
-        setRepositories(
-          nextRepositories
-            .filter((repository) => !repository.archived)
-            .sort((a, b) => b.stargazers_count - a.stargazers_count || new Date(b.updated_at) - new Date(a.updated_at))
-            .slice(0, REPO_LIMIT),
-        );
+        setRepositories(nextProjectList);
+        setSelectedRepositoryId(nextProjectList[0]?.id ?? null);
         setStatus("ready");
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -78,52 +71,72 @@ function App() {
     () => repositories.filter((repository) => activeFilter === "all" || (activeFilter === "fork" ? repository.fork : !repository.fork)),
     [activeFilter, repositories],
   );
+  const selectedRepository = visibleRepositories.find((repository) => repository.id === selectedRepositoryId) || visibleRepositories[0];
+
+  function selectFilter(filter) {
+    setActiveFilter(filter);
+    const firstMatchingRepository = repositories.find((repository) => filter === "all" || (filter === "fork" ? repository.fork : !repository.fork));
+    setSelectedRepositoryId(firstMatchingRepository?.id ?? null);
+  }
 
   return (
     <>
       <div className="page-grain" aria-hidden="true" />
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Home">TL<span>_</span></a>
-        <nav aria-label="Primary navigation">
-          <a href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
-        </nav>
+        <a className="github-link" href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
       </header>
 
       <main id="top">
         <section className="hero section-rule">
-          <div className="hero-title-wrap">
-            <h1>{profile.name || "Tim Li"}</h1>
+          <div className="hero-copy">
+            <p>{profile.name || "Tim Li"}</p>
+            <h1>One whole,<br />many pieces.</h1>
           </div>
-          <div className="hero-bottom">
-            <p className="intro">{profile.bio || "A collection of projects and experiments."}</p>
-            <a className="round-link" href="#work" aria-label="Jump to projects">↓</a>
+          <div className="whole-piece" aria-label={`${profile.name || "Tim Li"}'s monogram`}>
+            <span>T</span><span>L</span><span>+</span><span>+</span>
           </div>
+          <p className="intro">{profile.bio || "A collection of projects and experiments."}</p>
         </section>
 
-        <section className="projects section-rule" id="work">
+        <section className="projects" id="work" aria-label="Projects">
           <div className="section-heading">
-            <h2>Projects</h2>
+            <h2>Pieces</h2>
             <div className="repo-controls" aria-label="Filter projects">
               {["all", "source", "fork"].map((filter) => (
-                <button key={filter} className={`filter ${activeFilter === filter ? "is-active" : ""}`} type="button" onClick={() => setActiveFilter(filter)}>
+                <button key={filter} className={`filter ${activeFilter === filter ? "is-active" : ""}`} type="button" onClick={() => selectFilter(filter)}>
                   {filter === "all" ? <>All <span>{repositories.length || "—"}</span></> : filter === "source" ? "Source" : "Forks"}
                 </button>
               ))}
             </div>
           </div>
-          <div className="project-grid" aria-live="polite">
-            {status === "loading" && <p className="loading">Loading project index<span className="loading-dots">...</span></p>}
-            {status === "error" && <p className="loading">The project index is taking a break.<br /><a className="text-link" href={`${githubUrl}?tab=repositories`} target="_blank" rel="noreferrer">Visit GitHub instead ↗</a></p>}
-            {status === "ready" && !visibleRepositories.length && <p className="loading">No projects in this section.</p>}
-            {status === "ready" && visibleRepositories.map((repository, index) => <ProjectCard key={repository.id} repo={repository} index={index} />)}
+
+          <div className="puzzle-grid" aria-live="polite">
+            {status === "loading" && <p className="loading">Loading pieces<span className="loading-dots">...</span></p>}
+            {status === "error" && <p className="loading">Unable to load projects.<br /><a className="text-link" href={`${githubUrl}?tab=repositories`} target="_blank" rel="noreferrer">Visit GitHub ↗</a></p>}
+            {status === "ready" && !visibleRepositories.length && <p className="loading">No pieces here.</p>}
+            {status === "ready" && visibleRepositories.map((repository, index) => (
+              <ProjectPiece key={repository.id} repo={repository} index={index} isSelected={selectedRepository?.id === repository.id} onSelect={setSelectedRepositoryId} />
+            ))}
           </div>
-          <a className="text-link all-repos-link" href={`${githubUrl}?tab=repositories`} target="_blank" rel="noreferrer">View all repositories <span>↗</span></a>
+
+          {selectedRepository && (
+            <article className="project-detail" aria-live="polite">
+              <div className="detail-mark" aria-hidden="true">+</div>
+              <div>
+                <p className="detail-label">Selected piece</p>
+                <h3>{selectedRepository.name}</h3>
+              </div>
+              <p>{selectedRepository.description || "A project from the archive."}</p>
+              <a className="detail-link" href={selectedRepository.html_url} target="_blank" rel="noreferrer">Open project ↗</a>
+            </article>
+          )}
         </section>
       </main>
 
       <footer>
         <p>© {year} {profile.name || GITHUB_USERNAME}</p>
-        <a href={githubUrl} target="_blank" rel="noreferrer">GITHUB ↗</a>
+        <a href={githubUrl} target="_blank" rel="noreferrer">All repositories ↗</a>
       </footer>
     </>
   );

@@ -13,7 +13,9 @@ Vite will print a local URL to open in your browser. Use `npm run build` to crea
 
 ## Customize
 
-Set `GITHUB_USERNAME` near the top of `src/App.jsx` to reuse the site for another account. `REPO_LIMIT` controls how many repositories appear.
+Set `GITHUB_USERNAME` near the top of `src/App.jsx` to reuse the site for another account. `REPO_LIMIT` controls how many repositories appear. Update `EMAIL` and `LINKEDIN_URL` in the same file to configure the header contact links.
+
+The persistent chess board is playable directly on the site. It uses `chess.js` to enforce legal chess moves and a local minimax bot configured for approximately 1700 strength; it is not a rated Chess.com match.
 
 ## Deploy to GitHub Pages
 

@@ -9,76 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="page-grain" aria-hidden="true"></div>
-    <header class="site-header">
-      <a class="wordmark" href="#top" aria-label="Home">TL<span>_</span></a>
-      <nav aria-label="Primary navigation">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-        <a id="github-nav-link" href="https://github.com/TimLi1250" target="_blank" rel="noreferrer">GitHub ↗</a>
-      </nav>
-      <span class="header-status"><i></i> AVAILABLE</span>
-    </header>
-
-    <main id="top">
-      <section class="hero section-rule">
-        <p class="eyebrow">PORTFOLIO / <span id="current-year"></span></p>
-        <div class="hero-title-wrap">
-          <h1>Building<br /><em>useful</em> things.</h1>
-          <div class="hero-mark" aria-hidden="true">✳</div>
-        </div>
-        <div class="hero-bottom">
-          <p class="intro">A selected index of projects, experiments, and small systems by <span id="profile-name">Tim Li</span>.</p>
-          <a class="round-link" href="#work" aria-label="Jump to projects">↓</a>
-        </div>
-      </section>
-
-      <section class="marquee" aria-label="Portfolio keywords">
-        <div class="marquee-track"><span>CODE</span><b>✦</b><span>TOOLS</span><b>✦</b><span>EXPERIMENTS</span><b>✦</b><span>OPEN SOURCE</span><b>✦</b><span>CODE</span><b>✦</b><span>TOOLS</span><b>✦</b><span>EXPERIMENTS</span><b>✦</b><span>OPEN SOURCE</span><b>✦</b></div>
-      </section>
-
-      <section class="projects section-rule" id="work">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">01 / SELECTED WORK</p>
-            <h2>Repository<br />index.</h2>
-          </div>
-          <div class="repo-controls" aria-label="Filter projects">
-            <button class="filter is-active" type="button" data-filter="all">All <span id="repo-count">—</span></button>
-            <button class="filter" type="button" data-filter="source">Source</button>
-            <button class="filter" type="button" data-filter="fork">Forks</button>
-          </div>
-        </div>
-        <div id="project-grid" class="project-grid" aria-live="polite">
-          <p class="loading">Loading project index<span class="loading-dots">...</span></p>
-        </div>
-        <a class="text-link all-repos-link" id="all-repos-link" href="https://github.com/TimLi1250?tab=repositories" target="_blank" rel="noreferrer">View all repositories <span>↗</span></a>
-      </section>
-
-      <section class="about section-rule" id="about">
-        <div class="about-label"><p class="eyebrow">02 / THE PERSON</p></div>
-        <div class="about-copy">
-          <h2>Part maker,<br />part problem<br /><em>solver.</em></h2>
-          <div class="profile-details">
-            <p id="profile-bio">I make practical software and keep an active archive of things I am curious enough to build.</p>
-            <div class="profile-meta">
-              <span id="profile-location">INTERNET</span>
-              <a id="profile-contact" href="https://github.com/TimLi1250" target="_blank" rel="noreferrer">GET IN TOUCH ↗</a>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <p>© <span id="footer-year"></span> <span id="footer-name">TIM LI</span></p>
-      <p>MADE WITH INTENT <span aria-hidden="true">✳</span></p>
-      <a id="footer-github" href="https://github.com/TimLi1250" target="_blank" rel="noreferrer">GITHUB ↗</a>
-    </footer>
-
-    <script src="script.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

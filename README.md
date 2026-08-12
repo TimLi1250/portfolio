@@ -1,15 +1,27 @@
-# GitHub Portfolio
+# Tim Li's GitHub Portfolio
 
-A dependency-free GitHub Pages portfolio with a minimal, retro black-and-white visual style. It pulls public profile and repository data from the GitHub API at page load, so the project index remains current.
+A React + Vite portfolio with a minimal, retro black-and-white visual style. It fetches public profile and repository data from the GitHub API at page load, keeping the project index current.
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+Vite will print a local URL to open in your browser. Use `npm run build` to create a production build in `dist/`.
 
 ## Customize
 
-Change `GITHUB_USERNAME` near the top of `script.js` to point the site at another GitHub account. The project limit and sort order are in the same file.
+Set `GITHUB_USERNAME` near the top of `src/App.jsx` to reuse the site for another account. `REPO_LIMIT` controls how many repositories appear.
 
-## Publish with GitHub Pages
+## Deploy to GitHub Pages
 
-1. Push these files to the repository's default branch.
-2. In GitHub, open **Settings → Pages**.
-3. Under **Build and deployment**, select **Deploy from a branch**, then choose the default branch and `/ (root)`.
+The included [deployment workflow](.github/workflows/deploy.yml) builds and deploys the site whenever changes are pushed to `main`.
 
-GitHub will publish the site at `https://<username>.github.io/<repository>/`. For the root `https://<username>.github.io/` URL, the repository must be named `<username>.github.io`.
+1. Push the project to GitHub.
+2. In the repository, open **Settings → Pages**.
+3. Under **Build and deployment → Source**, select **GitHub Actions**.
+4. Push to `main` (or run the workflow from the **Actions** tab).
+
+GitHub will show the published URL in **Settings → Pages** after the workflow succeeds.

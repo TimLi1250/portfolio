@@ -14,17 +14,17 @@ const initialProfile = {
 
 function ProjectCard({ repo, index }) {
   const language = repo.language || "Unclassified";
-  const description = repo.description || "An in-progress experiment from the project archive.";
+  const description = repo.description;
 
   return (
     <article className="project-card">
       <div>
         <div className="card-top">
-          <span className="repo-number">{String(index + 1).padStart(2, "0")} / {repo.fork ? "FORK" : "SOURCE"}</span>
+          <span className="repo-number">{String(index + 1).padStart(2, "0")}</span>
           <a className="repo-link" href={repo.html_url} target="_blank" rel="noreferrer" aria-label={`Open ${repo.name} on GitHub`}>↗</a>
         </div>
         <h3 className="repo-name">{repo.name}</h3>
-        <p className="repo-description">{description}</p>
+        {description && <p className="repo-description">{description}</p>}
       </div>
       <div className="card-footer">
         <span><i className="language-dot" />{language}</span>
@@ -79,44 +79,30 @@ function App() {
     [activeFilter, repositories],
   );
 
-  const contactUrl = profile.blog || githubUrl;
-
   return (
     <>
       <div className="page-grain" aria-hidden="true" />
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Home">TL<span>_</span></a>
         <nav aria-label="Primary navigation">
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
           <a href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
         </nav>
-        <span className="header-status"><i /> AVAILABLE</span>
       </header>
 
       <main id="top">
         <section className="hero section-rule">
-          <p className="eyebrow">PORTFOLIO / {year}</p>
           <div className="hero-title-wrap">
-            <h1>Building<br /><em>useful</em> things.</h1>
-            <div className="hero-mark" aria-hidden="true">✳</div>
+            <h1>{profile.name || "Tim Li"}</h1>
           </div>
           <div className="hero-bottom">
-            <p className="intro">A selected index of projects, experiments, and small systems by {profile.name || GITHUB_USERNAME}.</p>
+            <p className="intro">{profile.bio || "A collection of projects and experiments."}</p>
             <a className="round-link" href="#work" aria-label="Jump to projects">↓</a>
           </div>
         </section>
 
-        <section className="marquee" aria-label="Portfolio keywords">
-          <div className="marquee-track"><span>CODE</span><b>✦</b><span>TOOLS</span><b>✦</b><span>EXPERIMENTS</span><b>✦</b><span>OPEN SOURCE</span><b>✦</b><span>CODE</span><b>✦</b><span>TOOLS</span><b>✦</b><span>EXPERIMENTS</span><b>✦</b><span>OPEN SOURCE</span><b>✦</b></div>
-        </section>
-
         <section className="projects section-rule" id="work">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">01 / SELECTED WORK</p>
-              <h2>Repository<br />index.</h2>
-            </div>
+            <h2>Projects</h2>
             <div className="repo-controls" aria-label="Filter projects">
               {["all", "source", "fork"].map((filter) => (
                 <button key={filter} className={`filter ${activeFilter === filter ? "is-active" : ""}`} type="button" onClick={() => setActiveFilter(filter)}>
@@ -133,25 +119,10 @@ function App() {
           </div>
           <a className="text-link all-repos-link" href={`${githubUrl}?tab=repositories`} target="_blank" rel="noreferrer">View all repositories <span>↗</span></a>
         </section>
-
-        <section className="about section-rule" id="about">
-          <div className="about-label"><p className="eyebrow">02 / THE PERSON</p></div>
-          <div className="about-copy">
-            <h2>Part maker,<br />part problem<br /><em>solver.</em></h2>
-            <div className="profile-details">
-              <p>{profile.bio || initialProfile.bio}</p>
-              <div className="profile-meta">
-                <span>{(profile.location || "INTERNET").toUpperCase()}</span>
-                <a href={contactUrl} target="_blank" rel="noreferrer">{profile.blog ? "VISIT WEBSITE ↗" : "GET IN TOUCH ↗"}</a>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer>
-        <p>© {year} {(profile.name || GITHUB_USERNAME).toUpperCase()}</p>
-        <p>MADE WITH INTENT <span aria-hidden="true">✳</span></p>
+        <p>© {year} {profile.name || GITHUB_USERNAME}</p>
         <a href={githubUrl} target="_blank" rel="noreferrer">GITHUB ↗</a>
       </footer>
     </>

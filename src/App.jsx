@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 
 const GITHUB_USERNAME = "TimLi1250";
@@ -6,7 +6,6 @@ const EMAIL = "tim.li0521@gmail.com";
 // Replace this with your public LinkedIn profile URL.
 const LINKEDIN_URL = "https://www.linkedin.com/";
 const REPO_LIMIT = 12;
-const BOT_RATING = 1700;
 
 const initialProfile = {
   name: "Tim Li",
@@ -62,15 +61,15 @@ function evaluatePosition(game) {
   return score;
 }
 
-function search(game, depth, alpha, beta, isBotTurn) {
+function search(game, depth, alpha, beta) {
   if (depth === 0 || game.isGameOver()) return evaluatePosition(game);
   const moves = game.moves({ verbose: true }).sort((a, b) => Number(Boolean(b.captured)) - Number(Boolean(a.captured)));
 
-  if (isBotTurn) {
+  if (game.turn() === "b") {
     let best = -Infinity;
     for (const move of moves) {
       game.move(move);
-      best = Math.max(best, search(game, depth - 1, alpha, beta, false));
+      best = Math.max(best, search(game, depth - 1, alpha, beta));
       game.undo();
       alpha = Math.max(alpha, best);
       if (beta <= alpha) break;
@@ -81,7 +80,7 @@ function search(game, depth, alpha, beta, isBotTurn) {
   let best = Infinity;
   for (const move of moves) {
     game.move(move);
-    best = Math.min(best, search(game, depth - 1, alpha, beta, true));
+    best = Math.min(best, search(game, depth - 1, alpha, beta));
     game.undo();
     beta = Math.min(beta, best);
     if (beta <= alpha) break;
@@ -89,19 +88,23 @@ function search(game, depth, alpha, beta, isBotTurn) {
   return best;
 }
 
-function chooseBotMove(game) {
+function chooseBotMove(game, botColor) {
   const moves = game.moves({ verbose: true });
-  const depth = moves.length > 26 ? 3 : 4;
+  const depth = 3;
   const scoredMoves = moves.map((move) => {
     game.move(move);
-    const score = search(game, depth - 1, -Infinity, Infinity, false);
+    const score = search(game, depth - 1, -Infinity, Infinity);
     game.undo();
     return { move, score };
-  }).sort((a, b) => b.score - a.score);
+  }).sort((a, b) => botColor === "b" ? b.score - a.score : a.score - b.score);
 
   // A small choice among near-equal moves keeps the engine from playing perfectly.
-  const candidates = scoredMoves.filter(({ score }) => score >= scoredMoves[0].score - 22).slice(0, 3);
+  const candidates = scoredMoves.filter(({ score }) => botColor === "b" ? score >= scoredMoves[0].score - 22 : score <= scoredMoves[0].score + 22).slice(0, 3);
   return candidates[Math.floor(Math.random() * candidates.length)].move;
+}
+
+function materialValue(game, color) {
+  return game.board().flat().reduce((total, piece) => total + (piece?.color === color && piece.type !== "k" ? pieceValues[piece.type] : 0), 0);
 }
 
 function ChessGame() {
@@ -109,62 +112,87 @@ function ChessGame() {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [botThinking, setBotThinking] = useState(false);
   const [moveHistory, setMoveHistory] = useState([]);
+  const [playerColor, setPlayerColor] = useState("w");
+  const [capturedPieces, setCapturedPieces] = useState({ w: [], b: [] });
+  const botTimer = useRef();
   const boardState = game.board();
+  const botColor = playerColor === "w" ? "b" : "w";
+  const displayedBoard = playerColor === "w" ? boardState : boardState.slice().reverse().map((rank) => rank.slice().reverse());
   const legalTargets = useMemo(() => selectedSquare ? game.moves({ square: selectedSquare, verbose: true }).map((move) => move.to) : [], [game, selectedSquare]);
+  const materialDifference = Math.round((materialValue(game, playerColor) - materialValue(game, botColor)) / 100);
+  const materialText = materialDifference === 0 ? "even" : `${materialDifference > 0 ? "You" : "Tim"} +${Math.abs(materialDifference)}`;
   const gameStatus = game.isCheckmate()
-    ? `${game.turn() === "w" ? "Tim" : "You"} wins by checkmate.`
+    ? game.turn() === playerColor ? "Tim wins by checkmate." : "You win by checkmate."
     : game.isDraw()
       ? "Draw."
       : botThinking
         ? "Tim is thinking…"
-        : game.turn() === "w" ? "Your move" : "Tim to move";
+        : game.turn() === playerColor ? "Your move" : "Tim to move";
 
-  function resetGame() {
-    setGame(new Chess());
-    setSelectedSquare(null);
-    setMoveHistory([]);
-    setBotThinking(false);
+  function recordCapture(move) {
+    if (move.captured) setCapturedPieces((current) => ({ ...current, [move.color === "w" ? "b" : "w"]: [...current[move.color === "w" ? "b" : "w"], move.captured] }));
   }
 
-  function makeBotMove(nextGame) {
+  function makeBotMove(nextGame, nextBotColor) {
     setBotThinking(true);
-    window.setTimeout(() => {
-      const botMove = chooseBotMove(nextGame);
+    botTimer.current = window.setTimeout(() => {
+      const botMove = chooseBotMove(nextGame, nextBotColor);
       nextGame.move(botMove);
+      recordCapture(botMove);
       playMoveSound(Boolean(botMove.captured));
       setMoveHistory((current) => [...current, botMove.san]);
       setGame(new Chess(nextGame.fen()));
       setBotThinking(false);
-    }, 180);
+    }, 70);
   }
 
+  function resetGame() {
+    window.clearTimeout(botTimer.current);
+    const nextPlayerColor = Math.random() < 0.5 ? "w" : "b";
+    const nextGame = new Chess();
+    setGame(nextGame);
+    setSelectedSquare(null);
+    setMoveHistory([]);
+    setCapturedPieces({ w: [], b: [] });
+    setBotThinking(false);
+    setPlayerColor(nextPlayerColor);
+    if (nextPlayerColor === "b") makeBotMove(nextGame, "w");
+  }
+
+  useEffect(() => {
+    resetGame();
+    return () => window.clearTimeout(botTimer.current);
+  }, []);
+
   function selectSquare(square, piece) {
-    if (botThinking || game.isGameOver() || game.turn() !== "w") return;
+    if (botThinking || game.isGameOver() || game.turn() !== playerColor) return;
 
     if (selectedSquare && legalTargets.includes(square)) {
       const nextGame = new Chess(game.fen());
       const userMove = nextGame.move({ from: selectedSquare, to: square, promotion: "q" });
       if (!userMove) return;
+      recordCapture(userMove);
       playMoveSound(Boolean(userMove.captured));
       setMoveHistory((current) => [...current, userMove.san]);
       setSelectedSquare(null);
       setGame(new Chess(nextGame.fen()));
-      if (!nextGame.isGameOver()) makeBotMove(nextGame);
+      if (!nextGame.isGameOver()) makeBotMove(nextGame, botColor);
       return;
     }
 
-    setSelectedSquare(piece?.color === "w" ? square : null);
+    setSelectedSquare(piece?.color === playerColor ? square : null);
   }
 
   return (
     <section className="chess-game" aria-label="Play chess against Tim's bot">
       <div className="chess-heading">
-        <div><p className="small-label">Play a game</p><p>Tim.bot <span>~{BOT_RATING}</span></p></div>
+        <div><p>Play a game of chess with me</p></div>
         <button type="button" onClick={resetGame}>New</button>
       </div>
-      <div className="chessboard" role="grid" aria-label="Interactive chess board">
-        {boardState.flatMap((rank, rankIndex) => rank.map((piece, fileIndex) => {
-          const square = `${"abcdefgh"[fileIndex]}${8 - rankIndex}`;
+      <div className="chess-board-wrap">
+        <div className="chessboard" role="grid" aria-label="Interactive chess board">
+        {displayedBoard.flatMap((rank, rankIndex) => rank.map((piece, fileIndex) => {
+          const square = playerColor === "w" ? `${"abcdefgh"[fileIndex]}${8 - rankIndex}` : `${"abcdefgh"[7 - fileIndex]}${rankIndex + 1}`;
           const isSelected = selectedSquare === square;
           const isTarget = legalTargets.includes(square);
           return (
@@ -180,10 +208,16 @@ function ChessGame() {
             </button>
           );
         }))}
+        </div>
+        {game.isCheckmate() && <div className="game-over-banner"><strong>Checkmate</strong><span>{game.turn() === playerColor ? "Tim wins" : "You win"}</span><button type="button" onClick={resetGame}>Play again</button></div>}
+      </div>
+      <div className="material-summary">
+        <span>Material <strong>{materialText}</strong></span>
+        <span>You captured <i>{capturedPieces[botColor].length ? capturedPieces[botColor].map((type, index) => <b key={`${type}-${index}`}>{pieces[botColor][type]}</b>) : "—"}</i></span>
+        <span>Tim captured <i>{capturedPieces[playerColor].length ? capturedPieces[playerColor].map((type, index) => <b key={`${type}-${index}`}>{pieces[playerColor][type]}</b>) : "—"}</i></span>
       </div>
       <p className="game-status" aria-live="polite">{gameStatus}</p>
-      <p className="move-history">{moveHistory.length ? moveHistory.join(" · ") : "You play White."}</p>
-      <p className="engine-note">Local engine; approximate strength, not a rated Chess.com match.</p>
+      <p className="move-history">{moveHistory.length ? moveHistory.join(" · ") : `You play ${playerColor === "w" ? "White" : "Black"}.`}</p>
     </section>
   );
 }

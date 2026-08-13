@@ -11,11 +11,12 @@ button { font: inherit; }
 .chess-game { width: 100%; margin-top: 42px; }
 .chess-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 16px; }
 .chess-heading p { margin: 0; }
-.chess-heading > div > p:last-child { margin-top: 4px; font-size: 16px; }
+.chess-heading > div > p:last-child { font-size: 18px; line-height: 1.15; }
 .chess-heading span { color: var(--muted); }
 .small-label, .section-title { margin: 0; color: var(--muted); font: 600 10px/1 Arial, Helvetica, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .chess-heading button { border: 0; border-bottom: 1px solid var(--ink); padding: 0 0 2px; background: transparent; cursor: pointer; font: 11px Arial, Helvetica, sans-serif; }
 .chessboard { aspect-ratio: 1; display: grid; grid-template-columns: repeat(8, 1fr); border: 1px solid var(--ink); user-select: none; }
+.chess-board-wrap { position: relative; }
 .chess-square { position: relative; container-type: inline-size; display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: 0; cursor: pointer; overflow: hidden; font: 1em/.9 "Arial Unicode MS", "Segoe UI Symbol", Georgia, serif; }
 .chess-square.dark { background: var(--board-dark); }
 .chess-square.light { background: var(--board-light); }
@@ -24,9 +25,11 @@ button { font: inherit; }
 .chess-square span { position: relative; z-index: 1; display: block; font-size: min(84cqi, 48px); line-height: .86; transform: translateY(-1%); }
 .white-piece { color: #fffdf8; text-shadow: 0 2px 1px #343431, 0 0 2px #343431; }
 .black-piece { color: #10100f; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+.game-over-banner { position: absolute; z-index: 2; inset: 50% auto auto 50%; width: min(78%, 300px); padding: 22px 18px; display: grid; justify-items: center; gap: 5px; transform: translate(-50%, -50%); background: var(--paper); border: 1px solid var(--ink); box-shadow: 0 10px 30px rgba(34, 30, 26, .18); text-align: center; }
+.game-over-banner strong { font-size: 30px; line-height: 1; letter-spacing: -.04em; }.game-over-banner span { color: var(--muted); font-size: 14px; }.game-over-banner button { margin-top: 7px; padding: 5px 8px; border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; font: 10px Arial, Helvetica, sans-serif; text-transform: uppercase; }
+.material-summary { display: grid; grid-template-columns: 1fr; gap: 3px; margin-top: 12px; color: var(--muted); font: 11px/1.35 Arial, Helvetica, sans-serif; }.material-summary strong { color: var(--ink); font-weight: 600; }.material-summary i { display: inline-flex; min-height: 1em; margin-left: 4px; color: var(--ink); font: 16px/.8 Georgia, serif; font-style: normal; vertical-align: -2px; }.material-summary b { margin-left: -3px; font-weight: 400; }
 .game-status { margin: 12px 0 0; font-size: 14px; }
 .move-history { min-height: 31px; margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-.engine-note { margin: 8px 0 0; color: var(--muted); font: 9px/1.35 Arial, Helvetica, sans-serif; }
 
 .content { min-width: 0; padding: 0 clamp(30px, 7vw, 118px); }
 .site-header { min-height: 94px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); font: 13px Arial, Helvetica, sans-serif; }

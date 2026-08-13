@@ -107,6 +107,16 @@ function materialValue(game, color) {
   return game.board().flat().reduce((total, piece) => total + (piece?.color === color && piece.type !== "k" ? pieceValues[piece.type] : 0), 0);
 }
 
+function findKingSquare(game, color) {
+  for (const rank of "12345678") {
+    for (const file of "abcdefgh") {
+      const piece = game.get(`${file}${rank}`);
+      if (piece?.type === "k" && piece.color === color) return `${file}${rank}`;
+    }
+  }
+  return null;
+}
+
 function ChessGame() {
   const [game, setGame] = useState(() => new Chess());
   const [selectedSquare, setSelectedSquare] = useState(null);
@@ -120,7 +130,9 @@ function ChessGame() {
   const displayedBoard = playerColor === "w" ? boardState : boardState.slice().reverse().map((rank) => rank.slice().reverse());
   const legalTargets = useMemo(() => selectedSquare ? game.moves({ square: selectedSquare, verbose: true }).map((move) => move.to) : [], [game, selectedSquare]);
   const materialDifference = Math.round((materialValue(game, playerColor) - materialValue(game, botColor)) / 100);
-  const materialText = materialDifference === 0 ? "even" : `${materialDifference > 0 ? "You" : "Tim"} +${Math.abs(materialDifference)}`;
+  const playerAdvantage = materialDifference > 0 ? `+${materialDifference}` : "";
+  const botAdvantage = materialDifference < 0 ? `+${Math.abs(materialDifference)}` : "";
+  const checkedKingSquare = game.isCheck() ? findKingSquare(game, game.turn()) : null;
   const gameStatus = game.isCheckmate()
     ? game.turn() === playerColor ? "Tim wins by checkmate." : "You win by checkmate."
     : game.isDraw()
@@ -189,19 +201,21 @@ function ChessGame() {
         <div><p>Play a game of chess with me</p></div>
         <button type="button" onClick={resetGame}>New</button>
       </div>
+      <div className="capture-row bot-captures"><span>Tim</span><i>{capturedPieces[playerColor].length ? capturedPieces[playerColor].map((type, index) => <b key={`${type}-${index}`}>{pieces[playerColor][type]}</b>) : ""}</i>{botAdvantage && <strong>{botAdvantage}</strong>}</div>
       <div className="chess-board-wrap">
         <div className="chessboard" role="grid" aria-label="Interactive chess board">
         {displayedBoard.flatMap((rank, rankIndex) => rank.map((piece, fileIndex) => {
           const square = playerColor === "w" ? `${"abcdefgh"[fileIndex]}${8 - rankIndex}` : `${"abcdefgh"[7 - fileIndex]}${rankIndex + 1}`;
           const isSelected = selectedSquare === square;
           const isTarget = legalTargets.includes(square);
+          const isCheckedKing = checkedKingSquare === square;
           return (
             <button
               type="button"
               role="gridcell"
               aria-label={`${square}${piece ? ` ${piece.color === "w" ? "white" : "black"} ${piece.type}` : ""}`}
               key={square}
-              className={`chess-square ${(rankIndex + fileIndex) % 2 ? "dark" : "light"} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""}`}
+              className={`chess-square ${(rankIndex + fileIndex) % 2 ? "dark" : "light"} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""} ${isCheckedKing ? "is-in-check" : ""}`}
               onClick={() => selectSquare(square, piece)}
             >
               {piece && <span className={piece.color === "w" ? "white-piece" : "black-piece"}>{pieces[piece.color][piece.type]}</span>}
@@ -211,11 +225,7 @@ function ChessGame() {
         </div>
         {game.isCheckmate() && <div className="game-over-banner"><strong>Checkmate</strong><span>{game.turn() === playerColor ? "Tim wins" : "You win"}</span><button type="button" onClick={resetGame}>Play again</button></div>}
       </div>
-      <div className="material-summary">
-        <span>Material <strong>{materialText}</strong></span>
-        <span>You captured <i>{capturedPieces[botColor].length ? capturedPieces[botColor].map((type, index) => <b key={`${type}-${index}`}>{pieces[botColor][type]}</b>) : "—"}</i></span>
-        <span>Tim captured <i>{capturedPieces[playerColor].length ? capturedPieces[playerColor].map((type, index) => <b key={`${type}-${index}`}>{pieces[playerColor][type]}</b>) : "—"}</i></span>
-      </div>
+      <div className="capture-row player-captures"><span>You</span><i>{capturedPieces[botColor].length ? capturedPieces[botColor].map((type, index) => <b key={`${type}-${index}`}>{pieces[botColor][type]}</b>) : ""}</i>{playerAdvantage && <strong>{playerAdvantage}</strong>}</div>
       <p className="game-status" aria-live="polite">{gameStatus}</p>
       <p className="move-history">{moveHistory.length ? moveHistory.join(" · ") : `You play ${playerColor === "w" ? "White" : "Black"}.`}</p>
     </section>

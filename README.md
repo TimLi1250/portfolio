@@ -15,7 +15,7 @@ Vite will print a local URL to open in your browser. Use `npm run build` to crea
 
 Set `GITHUB_USERNAME` near the top of `src/App.jsx` to reuse the site for another account. `REPO_LIMIT` controls how many repositories appear. Update `EMAIL` and `LINKEDIN_URL` in the same file to configure the header contact links.
 
-The persistent chess board is playable directly on the site. It uses `chess.js` to enforce legal chess moves and a local minimax bot configured for approximately 1700 strength; it is not a rated Chess.com match.
+The persistent chess board is playable directly on the site. It uses `chess.js` to enforce legal chess moves and a local, time-limited minimax bot; it is not a rated Chess.com match. The bot weighs material, piece activity, pawn structure, bishop pairs, and king safety, then searches up to five plies with iterative deepening, alpha–beta pruning, capture-only quiescence search, and a position cache. It stops searching after 420ms so moves stay under half a second, choosing occasionally among near-equal moves to feel more like a strong club player than a perfect engine.
 
 ## Deploy to GitHub Pages
 
@@ -27,5 +27,3 @@ The included [deployment workflow](.github/workflows/deploy.yml) builds and depl
 4. Push to `main` (or run the workflow from the **Actions** tab).
 
 GitHub will show the published URL in **Settings → Pages** after the workflow succeeds.
-
-

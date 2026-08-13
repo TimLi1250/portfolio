@@ -47,7 +47,7 @@ export default function App() {
           <nav className="section-nav" aria-label="Sections"><a href="#resume">Resume</a><a href="#projects">Projects</a><a href="#research">Research</a><a href="#education">Education</a></nav>
           <nav className="social-nav" aria-label="Contact links">{socialLinks.map((link) => <a key={link.label} href={link.href} aria-label={link.label} title={link.label} target={link.external ? "_blank" : undefined} rel={link.external ? "noreferrer" : undefined}><SocialIcon type={link.type} /></a>)}</nav>
         </header>
-        <section className="intro-section"><p className="small-label">Hello, I’m {profile.name || "Tim Li"}.</p><h1 className="intro-heading">I love to build<br />for efficiency,<br />simplicity &amp; fun!</h1><p className="lead">{profile.bio || "A collection of projects, notes, and work."}</p></section>
+        <section className="intro-section"><p className="small-label">Hello, I’m {profile.name || "Tim Li"}.</p><h1 className="intro-heading">I love to build<br />for efficiency,<br />simplicity &amp; fun</h1><p className="lead">{profile.bio || "A collection of projects, notes, and work."}</p></section>
         <Resume />
         <Projects githubUsername={GITHUB_USERNAME} githubUrl={githubUrl} />
         <Research />

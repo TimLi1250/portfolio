@@ -64,7 +64,7 @@ function ProjectCard({ project, repository }) {
         <div className="project-details">
           <div className="project-details-content">
             <p>{project.description}</p>
-            {project.demoUrl && <a className="project-demo-link" href={project.demoUrl} target="_blank" rel="noreferrer">&lt;Play Four Card Golf&gt;</a>}
+            {project.demoUrl && <a className="project-demo-link" href={project.demoUrl} target="_blank" rel="noreferrer"><strong>PLAY HERE</strong></a>}
             {project.image && <img className="project-visual" src={project.image} alt={`${project.name} project preview`} />}
             <p className="project-languages">{project.languages.join(" · ")}</p>
           </div>

@@ -76,6 +76,7 @@ h1 { max-width: 740px; margin: 25px 0 auto; font-size: clamp(57px, 7.4vw, 115px)
 .project-details-content { min-height: 0; overflow: hidden; }
 .project-card:hover .project-details, .project-card:focus-within .project-details { grid-template-rows: 1fr; opacity: 1; }
 .project-card p { margin: 7px 0 0; color: var(--muted); font-size: 16px; line-height: 1.35; }
+.project-demo-link { display: inline-block; margin-top: 14px; padding-bottom: 2px; border-bottom: 1px solid var(--ink); font: 11px Arial, Helvetica, sans-serif; }
 .project-visual { width: min(100%, 460px); display: block; margin-top: 15px; border: 1px solid var(--line); }
 .project-card .project-languages { margin-top: 11px; color: var(--ink); font: 600 10px/1.35 Arial, Helvetica, sans-serif; letter-spacing: .03em; }
 .prose { max-width: 510px; font-size: 22px; line-height: 1.42; letter-spacing: -.018em; }

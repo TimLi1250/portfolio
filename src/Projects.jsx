@@ -9,7 +9,7 @@ import rateMyDayImage from "./assets/project-rate-my-day.png";
 const FEATURED_REPOSITORIES = [
   { repository: "golf_cards",
     name: "Four Card Golf",
-    description: "Built a multiplayer online Four Card Golf game with real-time tables, private invites, chat, scoring, and special card mechanics for up to 12 players. Designed it as a mobile-friendly progressive web app with pixel-art visuals, music, and self-hosted deployment on Oracle Cloud.",
+    description: "Built a multiplayer online Four Card Golf game with real-time tables, private invites, chat, scoring, and special card mechanics for up to 12 players. Designed it as a mobile-friendly progressive web app with pixel-art visuals, music, and self-hosted deployment on Oracle Cloud. LINK HERE: https://golf-cards.duckdns.org/",
     languages: ["TypeScript", "JavaScript", "Dockerfile"],
     image: golfCardsImage },
 
